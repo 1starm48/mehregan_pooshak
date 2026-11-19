@@ -9,11 +9,12 @@ export default function Home() {
   const [categories, setCategories] = useState([])
   const [cat, setCat] = useState(null)
   const [q, setQ] = useState('')
+  const [err, setErr] = useState('')
 
   useEffect(() => {
     supabase.from('categories').select('*').order('name').then(({ data }) => setCategories(data || []))
     supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false })
-      .then(({ data }) => setProducts(data || []))
+      .then(({ data, error }) => { if (error) console.error(error); setProducts(data || []); setErr(error?.message || '') })
   }, [])
 
   if (!products) return <Loading />
@@ -29,6 +30,7 @@ export default function Home() {
           <button key={c.id} className={cat === c.id ? 'btn' : 'btn-light'} onClick={() => setCat(c.id)}>{c.name}</button>
         ))}
       </div>
+      {err && <p className="text-red-600 text-sm" dir="ltr">{err}</p>}
       {list.length === 0 && <p className="text-stone-500">محصولی یافت نشد.</p>}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {list.map((p) => (
